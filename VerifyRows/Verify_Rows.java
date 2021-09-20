@@ -210,7 +210,7 @@ public class Verify_Rows {
             return 180;
         } else if (datatype.matches("INTERVAL YEAR(.*) TO MONTH")) {
             return 182;
-        } else if (datatype.equals("INTERVAL DAY(.*) TO SECOND")) {
+        } else if (datatype.equals("INTERVAL DAY(.*) TO SECOND(.*)")) {
             return 183;
         } else if (datatype.equals("UROWID")) {
             return 208;
