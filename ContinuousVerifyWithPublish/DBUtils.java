@@ -78,18 +78,38 @@ public class DBUtils {
     }
 
     /**
-     * Reads a NClob/Clob in a 4K char buffer and get AL16UTF16 Bytes and then
+     * Reads a Clob in a 4K char buffer and get AL16UTF16 Bytes and then
      * write it to the disk using the OutputStream.
      *
-     * @param isClob - Are we reading a CLOB or NCLOB
      */
-    public void writeClob(boolean isClob) {
+    public void writeClob() {
         char[] char_buff = new char[4 * 1024];
         byte[] byte_buff = new byte[8 * 1024];
         int cRead;
         try (final OutputStream byteStream = new FileOutputStream(IO.getIOInstance().getBytesFile(), true);
-             final Reader clob_reader = isClob ? IO.getIOInstance().getClob().getCharacterStream() : 
-                                                 IO.getIOInstance().getNClob().getCharacterStream()) {
+             final Reader clob_reader = IO.getIOInstance().getClob().getCharacterStream()) {
+            while ((cRead = clob_reader.read(char_buff, 0, char_buff.length)) != -1) {
+                CharacterSet.javaCharsToAL16UTF16Bytes(char_buff, cRead, byte_buff);
+                byteStream.write(byte_buff, 0, cRead * 2);
+            }
+        } catch (SQLException | IOException ex) {
+            logger.log(Level.SEVERE, null, ex);
+        } 
+    }
+    
+    /**
+     * Reads a NClob in a 8K char buffer and get AL16UTF16 Bytes and then
+     * write it to the disk using the OutputStream.
+     *
+     * Nit: writeClob() and writeNClob() could also be combined to a single procedure, but it 
+     *      is good to have a bigger buffer for NCLOBS.
+     */
+    public void writeNClob() {
+        char[] char_buff = new char[8 * 1024];
+        byte[] byte_buff = new byte[16 * 1024];
+        int cRead;
+        try (final OutputStream byteStream = new FileOutputStream(IO.getIOInstance().getBytesFile(), true);
+             final Reader clob_reader = IO.getIOInstance().getNClob().getCharacterStream()) {
             while ((cRead = clob_reader.read(char_buff, 0, char_buff.length)) != -1) {
                 CharacterSet.javaCharsToAL16UTF16Bytes(char_buff, cRead, byte_buff);
                 byteStream.write(byte_buff, 0, cRead * 2);
