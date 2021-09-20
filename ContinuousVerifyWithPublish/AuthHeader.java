@@ -6,15 +6,12 @@
  *
  */
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
+import java.io.Console;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Base64;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 
 public class AuthHeader {
@@ -23,23 +20,22 @@ public class AuthHeader {
     private byte[] auth_header;
 
     private AuthHeader() {
-        try {
-            BufferedReader credentials = new BufferedReader(new InputStreamReader(System.in));
-            System.out.println("Enter Oracle Blockchain Platform Username:");
-            final char[] BLOCKCHAIN_PLATFORM_USERNAME = credentials.readLine().toCharArray();
-            System.out.println("Enter Oracle Blockchain Platform Password:");
-            final char[] BLOCKCHAIN_PLATFORM_PASSWORD = credentials.readLine().toCharArray();
-            final char[] AUTH = getAuth(BLOCKCHAIN_PLATFORM_USERNAME, BLOCKCHAIN_PLATFORM_PASSWORD);
-            /* Clear Off what we read */
-            Arrays.fill(BLOCKCHAIN_PLATFORM_USERNAME, '\u0000');
-            Arrays.fill(BLOCKCHAIN_PLATFORM_PASSWORD, '\u0000');
-            /* Get the encoded auth header bytes */
-            byte[] encodedAuth = Base64.getEncoder().encode(getAuthBytes(AUTH));
-            this.auth_header = encodedAuth;
-            Arrays.fill(AUTH, '\u0000');
-        } catch (Exception ex) {
-            Logger.getLogger(AuthHeader.class.getName()).log(Level.SEVERE, null, ex);
+        Console credentials = System.console();
+        if (credentials == null) {
+            throw new Error("Console Not Available");
         }
+        System.out.println("Enter Oracle Blockchain Platform Username:");
+        final char[] BLOCKCHAIN_PLATFORM_USERNAME = credentials.readLine().toCharArray();
+        System.out.println("Enter Oracle Blockchain Platform Password:");
+        final char[] BLOCKCHAIN_PLATFORM_PASSWORD = credentials.readPassword();
+        final char[] AUTH = getAuth(BLOCKCHAIN_PLATFORM_USERNAME, BLOCKCHAIN_PLATFORM_PASSWORD);
+        /* Clear Off what we read */
+        Arrays.fill(BLOCKCHAIN_PLATFORM_USERNAME, '\u0000');
+        Arrays.fill(BLOCKCHAIN_PLATFORM_PASSWORD, '\u0000');
+        /* Get the encoded auth header bytes */
+        byte[] encodedAuth = Base64.getEncoder().encode(getAuthBytes(AUTH));
+        this.auth_header = encodedAuth;
+        Arrays.fill(AUTH, '\u0000');
     }
 
     /* Get the authorization header to perform basic authorization */
