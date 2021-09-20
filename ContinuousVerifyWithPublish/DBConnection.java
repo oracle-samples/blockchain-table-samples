@@ -5,11 +5,10 @@
  * Licensed under the Universal Permissive License v 1.0 as shown at https://oss.oracle.com/licenses/upl/
  *
  */
-import java.io.BufferedReader;
+import java.io.Console;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -30,11 +29,13 @@ public class DBConnection {
             Properties prop = new Properties();
             prop.load(input);
             /* Read Database credentials */
-            BufferedReader credentials = new BufferedReader(new InputStreamReader(System.in));
+            Console credentials = System.console();
+            if(credentials == null)
+                throw new Error("Console Not Available");
             System.out.println("Enter Oracle Database Username:");
             final String DB_USERNAME = credentials.readLine();
             System.out.println("Enter Oracle Database Password:");
-            final String DB_PASSWORD = credentials.readLine();
+            final String DB_PASSWORD = new String(credentials.readPassword());
             this.connection = DriverManager.getConnection(getJDBCUrl(prop.getProperty("hostname"), Integer.parseInt(prop.getProperty("port")), prop.getProperty("oracle_sid")), DB_USERNAME, DB_PASSWORD);
         } catch (IOException | SQLException e) {
             logger.log(Level.SEVERE, null, e);
