@@ -65,10 +65,10 @@ The Blockchain verification program **`Verify_Rows.java`** requires the followin
 - **`hostname`:** Name of the Oracle Database Host
 - **`oracle_sid`:** Oracle Database SID
 - **`port`:** Port for Database connections
-- **`rest_server_url`:** URL for the REST server
-- **`rest_server_port`:** Port for the REST server
-- **`channel_id`:** Channel ID
-- **`chaincode_name`:** Chaincode Name
+- **`rest_server_url`:** URL for the Oracle Blockchain Platform (OBP) REST server
+- **`rest_server_port`:** Port for the Oracle Blockchain Platform REST server
+- **`channel_id`:** OBP Channel ID
+- **`chaincode_name`:** OBP Chaincode Name
 
 ### Build
  `PublishHash.java` requires [json-java.jar](https://search.maven.org/artifact/org.json/json/20210307/bundle) and[ Oracle JDBC Driver Jar version 8.0](https://repo1.maven.org/maven2/com/oracle/database/jdbc/ojdbc8/), .  Please ensure json-java.jar and ojdbc8.jar are available in the Java CLASSPATH before building `PublishHash.java`.  To build execute the following
@@ -95,3 +95,56 @@ Sample usage output for `PublishHash.java` is listed below:
     Txn Id : 03a16b4e24f8e3ff12b3112ece791bc6aad8cd53abf520389e972bb13607be64
     Published Hash : FCAD2F699877B17054EC5FD13D54478BB12ED3F5F98B8FD014046A4460124A82516663A9EA421F974C5E135656AFE9AE39B3CC742E280FBDAA2FACAD950A0D1F
 
+## Continuous Blockchain Verification
+
+The Continuous Verification & Publish program verifies the blockchain tables continuously at an interval of 5 mins. All previously verified rows are logged either locally or on the Oracle Blockchain Platform(if configured). Checkpoint data is maintained locally or on the Oracle Blockchain Platform to resume verification from the last checkpoint in case of program termination.  This sample program illustrates how to achieve independent continuous verification of Oracle Blockchain tables.
+
+### Configuration 
+
+The Blockchain verification program VerifyWithPublish.java requires the following information for connecting to the Database. This information should be updated in the configuration file config.properties in the VerifyRows directory. 
+
+- **`hostname=`** Name of the Oracle Database Host
+- **`oracle_sid=`** Oracle Database SID
+- **`port=`** Database listener port
+<br /> The following configuration settings are optional for publishing the results and verification checkpoint to Oracle Blockchain platform(OBP)
+- **`rest_server_url=`** OBP REST server
+- **`rest_server_port=`** OBP REST port 
+- **`channel_id=`** OBP channel id
+- **`chaincode_name=`** OBP chaincode name
+
+### Build
+`ContinuousVerifyWithPublish.java` requires [json-java.jar](https://search.maven.org/artifact/org.json/json/20210307/bundle) and[ Oracle JDBC Driver Jar version 8.0](https://repo1.maven.org/maven2/com/oracle/database/jdbc/ojdbc8/), .  Please ensure json-java.jar and ojdbc8.jar are available in the Java CLASSPATH before building `ContinuousVerifyWithPublish.java`.  To build execute the following
+    
+    cd ContinuousVerifyWithPublish
+    javac *.java
+
+
+### Parameters and Sample Output
+
+- **`COPY_BYTESFILE_FOR_FAILED:`** Boolean parameter specifying whether a failed verification should create an output file. The output file name contains the instance, chain and sequence number of the first row failing verification, for example bytes_1_1_2.dat indicates instance 1, chain_id 1, and sequence_no 2 failed verification.
+- **`CONTINOUS_VERIFICATION_MODE:`** Values: 0 – Verify only once. 1 – Verify continuously and build local metadata and log , 2 – Verify continuously and publish metadata and logs to OBP.
+- **`SCHEMA:`** Database schema for accessing the Blockchain table
+- **`TABLE:`** Table name for an Oracle Blockchain table
+<br />The following arguments are optional and the default behavior is to verify all rows of the Blockchain table on all instances.   
+- **`INSTANCE_ID:`**  The instance ID for the RAC instance whose chains should be verified
+- **`CHAIN_ID:`** Chain ID for a specific chain (valid values: 1-32)
+- **`SEQUENCE_NO:`** Sequeuence number for a specific row in the blockchain table
+
+
+`ContinuousVerifyWithPublish.java` uses the current directory for creating intermediate files used for the purpose of row verification.  The following is a sample output for ContinuousVerifyWithPublish.java when a schema name and the blockchain table name are provided as input, along with local continuous mode of operation; implying the verification of all rows in the table across all instances and chains.
+
+    $java ContinuousVerifyWithPublish true 1 sample_schema sample_table
+    Verified 2 rows for instance id : 1 , chain id : 1 
+    Verified 3 rows for instance id : 1 , chain id : 5
+    Verified 5 rows for instance id : 1
+    Verified a total of 5 rows
+    Deleted the file : bytesfile.dat
+
+    Verified 4 rows for instance id : 1 , chain id : 1 
+    Verified 2 rows for instance id : 1 , chain id : 5
+    Verified 3 rows for instance id : 1 , chain id : 16
+    Verified 9 rows for instance id : 1
+    Verified a total of 9 rows
+    Deleted the file : bytesfile.dat
+    
+     
