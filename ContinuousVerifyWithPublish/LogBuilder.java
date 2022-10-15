@@ -134,7 +134,7 @@ public class LogBuilder {
         args.put("storeLog");
         args.put(getSchema_name());
         args.put(getTable_name());
-        args.put(Utils.getUtils().getDbGUID());
+        args.put(DBUtils.getDBUtils().getDbGUID());
         args.put(getInstance_id().toString());
         args.put(getChain_id().toString());
         args.put(getSeq_no().toString());
