@@ -66,7 +66,7 @@ public class CheckPoint {
             JSONArray jSONArray = new JSONArray(new int[32]);
             localObject.put(instance_id.toString(), jSONArray);
         }
-        return (int) localObject.getJSONArray(instance_id.toString()).get(chain_id - 1);
+        return (int) localObject.getJSONArray(instance_id.toString()).get(chain_id);
     }
 
     /* Set the last seen sequence value for this chain_id */
@@ -75,7 +75,7 @@ public class CheckPoint {
         if (CONTINUOUS_VERIFICATION_MODE == Constants.MODE_OFF) {
             return;
         }
-        localObject.getJSONArray(instance_id.toString()).put(chain_id - 1, sequence_no);
+        localObject.getJSONArray(instance_id.toString()).put(chain_id.intValue(), sequence_no);
     }
 
     /* Export checkpoints in a local file */
@@ -106,6 +106,7 @@ public class CheckPoint {
         args.put("writeMetadata");
         args.put(schema);
         args.put(table);
+        args.put(DBUtils.getDBUtils().getDbGUID());
         args.put(localObject.toString());
         /* Get the JSON Body to send as a part of the request */
         String jsonBody = OBPUtils.getInstance().JSONBodyBuilder(args, Constants.OBP_POST);
@@ -145,6 +146,7 @@ public class CheckPoint {
         args.put("readMetadata");
         args.put(schema);
         args.put(table);
+        args.put(DBUtils.getDBUtils().getDbGUID());
         String jsonBody = OBPUtils.getInstance().JSONBodyBuilder(args, Constants.OBP_GET);
         localObject = OBPConnection.getInstance().fetchData(jsonBody);
     }
